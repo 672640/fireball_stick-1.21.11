@@ -41,14 +41,11 @@ public class ModStickMain implements ModInitializer {
 	public static InteractionResult useOn(ModStickItem modStickItem, UseOnContext context)  {
 
 		BlockPlaceContext placeContext = new BlockPlaceContext(context);
-
 		BlockPos clickedPos = placeContext.getClickedPos();
-
 		Level level = context.getLevel();
-
 		Player player = context.getPlayer();
-
 		PrimedTnt primedTnt = new PrimedTnt(level, clickedPos.getX() + 0.5, clickedPos.getY(), clickedPos.getZ() + 0.5, player);
+
 
 		//FireChargeItem fireChargeItem = new FireChargeItem(new Item.Properties());
 		if (level instanceof ServerLevel serverLevel && serverLevel.getBlockState(clickedPos).canBeReplaced() && player != null) {

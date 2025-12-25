@@ -11,6 +11,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
 import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball;
 import net.minecraft.world.item.Item;
@@ -48,16 +49,25 @@ public class ModStickClickAir extends Item {
         double dirZ = player.getZ();
         //Vec3 dir = new Vec3(dirX, dirY, dirZ);
         Vec3 playerLookDir = player.getLookAngle();
+        Vec3 playerStartDir = player.getEyePosition();
+        Vec3 playerEndDir = playerStartDir.add(playerLookDir.scale(5));
         playerLookDir.add(dirX, dirY, dirZ).normalize();
         //playerLookDir.add(0, 1000, 0).normalize();
         //SmallFireball fireball = new SmallFireball(level, dirX, dirY, dirZ, dir.normalize());;
+        LargeFireball fireballAir = new LargeFireball(level, player, playerLookDir, 10);
+        EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
+                level, fireballAir, playerStartDir, playerEndDir, player.getBoundingBox().expandTowards(playerLookDir.scale(5.0)).inflate(1.0),
+                entity -> entity instanceof LivingEntity && entity != player);
 
-        if (blockHitResult.getType() != Type.BLOCK && blockHitResult.getType() != Type.ENTITY) {
+        if (blockHitResult.getType() != Type.BLOCK) {
             Vec3 fireballChangePosition = player.position().add(0, player.getEyeHeight() - 0.25, 0).add(playerLookDir.scale(2.5));
-            LargeFireball fireballAir = new LargeFireball(level, player, playerLookDir, 10);
             fireballAir.moveOrInterpolateTo(fireballChangePosition);
             return fireballAir;
 
+        } else if(blockHitResult.getType() != Type.BLOCK && entityHitResult != null){
+            Vec3 fireballChangePosition = player.position().add(0, player.getEyeHeight() - 0.25, 0).add(playerLookDir.scale(2.5));
+            fireballAir.moveOrInterpolateTo(entityHitResult.getLocation());
+            return fireballAir;
         } else {
             return null;
         }
