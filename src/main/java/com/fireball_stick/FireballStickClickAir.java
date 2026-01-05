@@ -1,5 +1,7 @@
 package com.fireball_stick;
 
+import net.minecraft.client.color.item.Firework;
+import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -13,8 +15,13 @@ import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.FireBlock;
+import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.Clear;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraft.world.phys.Vec3;
 
@@ -37,8 +44,10 @@ public class FireballStickClickAir extends Item {
         //ItemStack itemStack = player.getItemInHand(hand);
         BlockHitResult blockHitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
         //Reach for hitting an entity
-        int reach = 10;
+        int reach = 1000;
+        //Hit nothing
         int explosionPowerAir = 10;
+        //Hit entity
         int explosionPowerEntity = 1;
         //fireball's velocity
         int velocity = 10;
@@ -89,6 +98,7 @@ public class FireballStickClickAir extends Item {
             return null;
         }
     }
+
 }
 
 //TODO:

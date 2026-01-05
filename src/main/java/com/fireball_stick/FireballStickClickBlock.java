@@ -2,6 +2,7 @@ package com.fireball_stick;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -25,6 +26,11 @@ import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static net.minecraft.world.entity.EntityType.TNT;
@@ -32,10 +38,28 @@ import static net.minecraft.world.item.Items.registerItem;
 public class FireballStickClickBlock implements ModInitializer {
 	public static final String MOD_ID = "fireball_stick";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	private static final List<Runnable> QUEUE = new ArrayList<>();
+	private static int tickCounter = 0;
+
+	public static void add(Runnable task) {
+		QUEUE.add(task);
+	}
+	//Tick queue system
+	public static void tick() {
+		if (QUEUE.isEmpty()) {
+			return;
+		}
+		tickCounter++;
+		if (tickCounter >= 1) {
+			tickCounter = 0;
+			QUEUE.remove(0).run();
+		}
+	}
 
 	@Override
 	public void onInitialize() {
 		registerItem(modItemId("fireball_stick"), FireballStickItem::new, new Item.Properties());
+		ServerTickEvents.END_SERVER_TICK.register(server -> tick());
 	}
 
 	private static ResourceKey<Item> modItemId(final String name) {
@@ -46,51 +70,42 @@ public class FireballStickClickBlock implements ModInitializer {
 	public static InteractionResult useOn(FireballStickItem FireballStickItem, UseOnContext context)  {
 		//Default TNT explode timer: 80 ticks
 		int timeBetweenEachTntPlacement = 30; //milliseconds
-		int tntAmount = 50;
+		int tntAmount = 100;
 		//50 ms = 1 tick
-		int tntFuseTimer = (tntAmount * timeBetweenEachTntPlacement) / 50 ; //ticks
-		//360 degrees or 2 PI = full circle
+		int tntFuseTimer = (tntAmount * 50) / 50 ; //ticks
+		final double[] changePosition = {0};
+		int i;
+		final double[] angle = {0};
+		double angleStep = Math.PI / ((double) tntAmount / 2); //How smooth the wave looks
+		double amplitude = 20; //Width of the wave
 		BlockPlaceContext placeContext = new BlockPlaceContext(context);
 		BlockPos clickedPos = placeContext.getClickedPos();
 		Level level = context.getLevel();
 		Player player = context.getPlayer();
-		//FireChargeItem fireChargeItem = new FireChargeItem(new Item.Properties());
+
 		if (level instanceof ServerLevel serverLevel &&
 				serverLevel.getBlockState(clickedPos).canBeReplaced() && player != null) {
 			//serverLevel.explode(primedTnt, clickedPos.getX(), clickedPos.getY(), clickedPos.getZ(),
 					//explosionPowerBlock, ServerLevel.ExplosionInteraction.BLOCK);
 			if(!level.isClientSide()) {
-				//full circle = 2 PI
-				double halfCircleSine = Math.toRadians(2 * Math.PI / ((double) tntAmount / 2));
-				double halfCircleCos = Math.toRadians(2 * Math.PI / ((double) tntAmount / 2));
-				int i;
-				double changePosition = 1;
 				for (i = 0; i < tntAmount; i++) {
-					Vec3 playerLookDir = player.getLookAngle();
+					int finalI = i;
+					//Fires a TNT at the interval specified in tick()
+					add(() -> {
+					//Vec3 playerLookDir = player.getLookAngle();
 					double xDir = clickedPos.getX();
 					double yDir = clickedPos.getY();
 					double zDir = clickedPos.getZ();
 					PrimedTnt primedTnt = new PrimedTnt(level,
-							xDir + halfCircleSine + halfCircleCos,
-							yDir,
-							zDir + changePosition,
+							xDir + (Math.cos(angle[0]) * amplitude),
+							yDir + (Math.exp(changePosition[0])),
+							zDir + (Math.sin(angle[0]) * amplitude),
 							player);
-						primedTnt.setFuse(tntFuseTimer);
-						serverLevel.addFreshEntity(primedTnt);
-						changePosition = changePosition + 3;
-						if(halfCircleSine <= Math.PI && halfCircleSine >= 0) {
-							halfCircleSine = halfCircleSine + tntAmount - (tntAmount + i);
-							halfCircleCos = 0;
-						}
-						else if(halfCircleSine > Math.PI && halfCircleSine < 2 * Math.PI) {
-							halfCircleCos = halfCircleSine + tntAmount - (tntAmount + i);
-							halfCircleSine = 0;
-						}
-					try {
-						TimeUnit.MILLISECONDS.sleep(timeBetweenEachTntPlacement);
-					} catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+					primedTnt.setFuse(tntFuseTimer);
+					serverLevel.addFreshEntity(primedTnt);
+					angle[0] += angleStep;
+					changePosition[0] += 0.05;
+				});
                 }
 			}
 			//Plays a sound when placed
@@ -111,3 +126,5 @@ public class FireballStickClickBlock implements ModInitializer {
 		return 20;
 	}
 }
+//TODO:
+//Make it so we can spawn multiple TNT circles at once
