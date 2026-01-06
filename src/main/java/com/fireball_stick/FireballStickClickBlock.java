@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -83,6 +84,10 @@ public class FireballStickClickBlock implements ModInitializer {
 		Level level = context.getLevel();
 		Player player = context.getPlayer();
 
+		double xDir = clickedPos.getX();
+		double yDir = clickedPos.getY();
+		double zDir = clickedPos.getZ();
+
 		if (level instanceof ServerLevel serverLevel &&
 				serverLevel.getBlockState(clickedPos).canBeReplaced() && player != null) {
 			//serverLevel.explode(primedTnt, clickedPos.getX(), clickedPos.getY(), clickedPos.getZ(),
@@ -93,9 +98,6 @@ public class FireballStickClickBlock implements ModInitializer {
 					//Fires a TNT at the interval specified in tick()
 					add(() -> {
 					//Vec3 playerLookDir = player.getLookAngle();
-					double xDir = clickedPos.getX();
-					double yDir = clickedPos.getY();
-					double zDir = clickedPos.getZ();
 					PrimedTnt primedTnt = new PrimedTnt(level,
 							xDir + (Math.cos(angle[0]) * amplitude),
 							yDir + (Math.exp(changePosition[0])),

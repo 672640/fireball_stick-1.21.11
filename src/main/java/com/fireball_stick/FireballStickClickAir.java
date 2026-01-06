@@ -1,13 +1,22 @@
 package com.fireball_stick;
 
 import net.minecraft.client.color.item.Firework;
+import net.minecraft.client.particle.HugeExplosionParticle;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -24,6 +33,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 public class FireballStickClickAir extends Item {
     public FireballStickClickAir(Item.Properties properties) {
@@ -41,7 +51,12 @@ public class FireballStickClickAir extends Item {
     }
 
     public static Projectile asProjectile(Item item, Level level, Player player, InteractionHand hand) {
-        //ItemStack itemStack = player.getItemInHand(hand);
+        double min = 0.0;
+        double max = 10.0;
+        RandomSource random = RandomSource.create();
+        double value1 = min + random.nextDouble() * (max - min);
+        double value2 = min + random.nextDouble() * (max - min);
+        double value3 = min + random.nextDouble() * (max - min);
         BlockHitResult blockHitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
         //Reach for hitting an entity
         int reach = 1000;
@@ -62,6 +77,8 @@ public class FireballStickClickAir extends Item {
         //playerLookDir.add(0, 1000, 0).normalize();
         //SmallFireball fireball = new SmallFireball(level, dirX, dirY, dirZ, dir.normalize());;
         LargeFireball fireballAir = new LargeFireball(level, player, playerLookDir, explosionPowerAir);
+        //Store the fireball's position
+        Vec3 fireballPos = fireballAir.position();
         //Target entity
         EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
                 level, fireballAir, playerStartDir, playerEndDir, player.getBoundingBox()
@@ -81,6 +98,7 @@ public class FireballStickClickAir extends Item {
             return fireballAir;
         //Hit entity
         } else if(entityHitResult != null) {
+
             Entity target = entityHitResult.getEntity();
             //Changes the fireball's position to the position of the entity we clicked on
             Vec3 fireballOnEntityPosition = target.position();
@@ -89,6 +107,14 @@ public class FireballStickClickAir extends Item {
             //Evil fake fireball explosion
             level.explode(fireballAir, fireballAir.getX(), fireballAir.getY(), fireballAir.getZ(),
                     explosionPowerEntity, Level.ExplosionInteraction.MOB);
+            if(level instanceof ServerLevel serverLevel) {
+                //serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, target.getX(), target.getY(), target.getZ(), 1000, 2, 2, 2, 0);
+                //32 bit integer limit: 2147483647
+                serverLevel.sendParticles(new DustParticleOptions(16711680, 5), target.getX(), target.getY(), target.getZ(), 100, value1, value1, value1, 2);
+                //serverLevel.sendParticles(new DustParticleOptions(10000000, 5), target.getX(), target.getY(), target.getZ(), 1000, 2, 2, 2, 2);
+                serverLevel.sendParticles(new DustParticleOptions(500000, 5), target.getX(), target.getY(), target.getZ(), 100, value2, value2, value2, 2);
+                serverLevel.sendParticles(new DustParticleOptions(3000, 5), target.getX(), target.getY(), target.getZ(), 100, value3, value3, value3, 2);
+            }
             //Fireball is fake now, discards it when spawned so it doesn't appear after exploding
             fireballAir.discard();
             //Might add a sound effect later
