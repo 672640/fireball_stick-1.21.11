@@ -1,13 +1,6 @@
 package com.fireball_stick;
 
-import net.minecraft.client.color.item.Firework;
-import net.minecraft.client.particle.HugeExplosionParticle;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -16,7 +9,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -24,21 +16,16 @@ import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseFireBlock;
-import net.minecraft.world.level.block.FireBlock;
-import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.Clear;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class FireballStickClickAir extends Item {
     public FireballStickClickAir(Item.Properties properties) {
         super(properties);
     }
+
     //Initializes the item
     public static InteractionResult use(Item item, Level level, Player player, InteractionHand hand) {
         //ItemStack itemStack = player.getItemInHand(hand);
@@ -107,6 +94,7 @@ public class FireballStickClickAir extends Item {
             level.explode(fireballAir, fireballAir.getX(), fireballAir.getY(), fireballAir.getZ(),
                     explosionPowerEntity, Level.ExplosionInteraction.MOB);
             if(level instanceof ServerLevel serverLevel) {
+                //Particles spawn up to 32 blocks away from the player
                 //serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, target.getX(), target.getY(), target.getZ(), 1000, 2, 2, 2, 0);
                 //32 bit integer limit: 2147483647
                 serverLevel.sendParticles(new DustParticleOptions(16711680, 5), target.getX(), target.getY(), target.getZ(), 100, randomDistr1, randomDistr1, randomDistr1, 2);

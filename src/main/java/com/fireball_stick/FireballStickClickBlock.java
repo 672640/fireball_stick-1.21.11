@@ -1,23 +1,16 @@
 package com.fireball_stick;
 
+import com.fireball_stick.item.ModItems;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
@@ -35,23 +28,29 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-import static net.minecraft.world.entity.EntityType.TNT;
-import static net.minecraft.world.item.Items.registerItem;
 public class FireballStickClickBlock implements ModInitializer {
 	public static final String MOD_ID = "fireball_stick";
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	//public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	private static final List<Runnable> QUEUE = new ArrayList<>();
 	private static int tickCounter = 0;
 	private static int taskCount = 0;
 	private static final Queue<Runnable> nextTickQueue = new ArrayDeque<>();
 
+	@Override
+	public void onInitialize() {
+		ModItems.init();
+		ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
+						.register(entries -> entries.accept(ModItems.FIREBALL_STICK));
+		ServerTickEvents.END_SERVER_TICK.register(server -> tick());
+	}
+/*
+	private static ResourceKey<Item> modItemId(final String name) {
+		return ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, name));
+	}
+*/
 	public static void add(Runnable task) {
-			QUEUE.add(task);
+		QUEUE.add(task);
 	}
 
 	//Tick queue system
@@ -64,16 +63,6 @@ public class FireballStickClickBlock implements ModInitializer {
 			tickCounter = 0;
 			QUEUE.remove(0).run();
 		}
-	}
-
-	@Override
-	public void onInitialize() {
-		registerItem(modItemId("fireball_stick"), FireballStickItem::new, new Item.Properties());
-		ServerTickEvents.END_SERVER_TICK.register(server -> tick());
-	}
-
-	private static ResourceKey<Item> modItemId(final String name) {
-		return ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, name));
 	}
 
 	//Hits a block
@@ -101,10 +90,10 @@ public class FireballStickClickBlock implements ModInitializer {
 			final double[] angle = {Math.toRadians(player.getYRot() + 90)};
 			double yaw = Math.toRadians(player.getYRot() + 90);
 			double angleStep = Math.PI / ((double) tntAmount / 2); //How smooth the curve looks
-			double amplitude = 20; //Width of the curve
+			double amplitude = 15; //Width of the curve
 			int tntFuseTimer = (tntAmount * 50) / 50 ; //50 ms = 1 tick
 			final double[] changePosition = {0};
-			List<PrimedTnt> trackedTnt = new ArrayList<>();
+			//List<PrimedTnt> trackedTnt = new ArrayList<>();
 				for (i = 0; i < tntAmount; i++) {
 						//Fires a TNT at the interval specified in tick()
 					int finalI = i;
@@ -118,8 +107,10 @@ public class FireballStickClickBlock implements ModInitializer {
 						serverLevel.addFreshEntity(primedTnt);
 						//Performance improvement: Spawns a particle effect on each TNT that satisfy the modulus criteria instead of on each TNT
 						if((finalI % 6) == 1) {
+							//Particles only spawn 32 blocks away from the player. Might bypass in future
 							serverLevel.sendParticles(ParticleTypes.COPPER_FIRE_FLAME, primedTnt.getX(), primedTnt.getY(), primedTnt.getZ(), 700, randomDistr, randomDistr, randomDistr, 1);
 						}
+						/*
 						trackedTnt.add(primedTnt);
 						ServerTickEvents.END_SERVER_TICK.register(server -> {
 							trackedTnt.removeIf(tnt -> {
@@ -132,6 +123,7 @@ public class FireballStickClickBlock implements ModInitializer {
 								}
 							});
 						});
+						 */
 						angle[0] += angleStep;
 						changePosition[0] += Math.PI / ((double) (tntAmount / 4) / 2);
 					});
@@ -154,5 +146,7 @@ public class FireballStickClickBlock implements ModInitializer {
 		return 200;
 	}
 }
+
+
 //TODO:
 //Make it so we can spawn multiple TNT circles at once
