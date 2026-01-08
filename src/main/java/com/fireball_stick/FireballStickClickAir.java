@@ -45,11 +45,11 @@ public class FireballStickClickAir extends Item {
         double randomDistr2 = min + random.nextDouble() * (max - min);
         double randomDistr3 = min + random.nextDouble() * (max - min);
         BlockHitResult blockHitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
-        //Reach for hitting an entity
+        //Max distance we can click on an entity
         int reach = 1000;
-        //Hit nothing
+        //Clicks on air/liquid
         int explosionPowerAir = 10;
-        //Hit entity
+        //Clicks on entity
         int explosionPowerEntity = 1;
         //fireball's velocity
         int velocity = 10;
@@ -71,7 +71,7 @@ public class FireballStickClickAir extends Item {
                 level, fireballAir, playerStartDir, playerEndDir, player.getBoundingBox()
                         .expandTowards(playerLookDir.scale(reach)).inflate(1.0),
                 entity -> entity instanceof LivingEntity && entity != player);
-        //Hit air or water
+        //Click on air/liquid
         if (blockHitResult.getType() != Type.BLOCK && entityHitResult == null) {
             //Fireball's initial spawn position
             Vec3 fireballInAirPosition = player.position().add(0, player.getEyeHeight() - 0.25, 0)
@@ -80,10 +80,11 @@ public class FireballStickClickAir extends Item {
             fireballAir.moveOrInterpolateTo(fireballInAirPosition);
             //Set's the fireball's velocity
             fireballAir.setDeltaMovement(playerLookDir.scale(velocity));
+            //Plays sound when cliking on air/liquid
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
             return fireballAir;
-        //Hit entity
+        //Click on entity
         } else if(entityHitResult != null) {
             Entity target = entityHitResult.getEntity();
             //Changes the fireball's position to the position of the entity we clicked on
@@ -95,8 +96,7 @@ public class FireballStickClickAir extends Item {
                     explosionPowerEntity, Level.ExplosionInteraction.MOB);
             if(level instanceof ServerLevel serverLevel) {
                 //Particles spawn up to 32 blocks away from the player
-                //serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, target.getX(), target.getY(), target.getZ(), 1000, 2, 2, 2, 0);
-                //32 bit integer limit: 2147483647
+                //32-bit integer limit: 2147483647
                 serverLevel.sendParticles(new DustParticleOptions(16711680, 5), target.getX(), target.getY(), target.getZ(), 100, randomDistr1, randomDistr1, randomDistr1, 2);
                 //serverLevel.sendParticles(new DustParticleOptions(10000000, 5), target.getX(), target.getY(), target.getZ(), 1000, 2, 2, 2, 2);
                 serverLevel.sendParticles(new DustParticleOptions(500000, 5), target.getX(), target.getY(), target.getZ(), 100, randomDistr2, randomDistr2, randomDistr2, 2);
@@ -104,8 +104,8 @@ public class FireballStickClickAir extends Item {
             }
             //Fireball is fake now, discards it when spawned so it doesn't appear after exploding
             fireballAir.discard();
-            //Might add a sound effect later
-            //level.playSound(null, dirX + 0.5, dirY, dirZ + 0.5, SoundEvents.PIG_DEATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
+            //Sound effect when clicking on entity
+            level.playSound(null, dirX, dirY, dirZ, SoundEvents.PLAYER_LEVELUP, SoundSource.NEUTRAL, 0.1F, 1.0F);
             return fireballAir;
         } else {
             return null;

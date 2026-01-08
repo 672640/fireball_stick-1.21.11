@@ -9,8 +9,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
@@ -31,7 +34,6 @@ import java.util.Queue;
 
 public class FireballStickClickBlock implements ModInitializer {
 	public static final String MOD_ID = "fireball_stick";
-	//public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	private static final List<Runnable> QUEUE = new ArrayList<>();
 	private static int tickCounter = 0;
 	private static int taskCount = 0;
@@ -40,15 +42,17 @@ public class FireballStickClickBlock implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModItems.init();
+
+		//Category: Tools and utilities
 		ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
 						.register(entries -> entries.accept(ModItems.FIREBALL_STICK));
+		//Category: Combat
+		ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT)
+				.register(entries -> entries.accept(ModItems.FIREBALL_STICK));
+
 		ServerTickEvents.END_SERVER_TICK.register(server -> tick());
 	}
-/*
-	private static ResourceKey<Item> modItemId(final String name) {
-		return ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, name));
-	}
-*/
+
 	public static void add(Runnable task) {
 		QUEUE.add(task);
 	}
@@ -60,6 +64,7 @@ public class FireballStickClickBlock implements ModInitializer {
 		}
 		tickCounter++;
 		if (tickCounter >= 1) {
+			//Resets the tick counter
 			tickCounter = 0;
 			QUEUE.remove(0).run();
 		}
@@ -67,43 +72,45 @@ public class FireballStickClickBlock implements ModInitializer {
 
 	//Hits a block
 	public static InteractionResult useOn(FireballStickItem FireballStickItem, UseOnContext context)  {
-		//Default TNT explode timer: 80 ticks
-		int timeBetweenEachTntPlacement = 30; //milliseconds
-		int tntAmount = 100;
-		//50 ms = 1 tick
 		BlockPlaceContext placeContext = new BlockPlaceContext(context);
 		BlockPos clickedPos = placeContext.getClickedPos();
 		Level level = context.getLevel();
 		Player player = context.getPlayer();
 
-		double xDir = clickedPos.getX();
-		double yDir = clickedPos.getY();
-		double zDir = clickedPos.getZ();
-
 		if (level instanceof ServerLevel serverLevel && serverLevel.getBlockState(clickedPos).canBeReplaced() && player != null && !level.isClientSide()) {
+			double xDir = clickedPos.getX();
+			double yDir = clickedPos.getY();
+			double zDir = clickedPos.getZ();
+			//Obsolete. New placement time is purely tick based
+			int timeBetweenEachTntPlacement = 30; //milliseconds
+			int tntAmount = 100;
 			double min = 1.0;
 			double max = 4.0;
 			RandomSource random = RandomSource.create();
+			//Randomized the distribution of particle effects based on the min/max values specified
 			double randomDistr = min + random.nextDouble() * (max - min);
-			int i;
-			Vec3 playerLookDir = player.getLookAngle();
+			//Makes the start spawn angle of the TNT be equal to the direction the player is facing (default (0): east)
 			final double[] angle = {Math.toRadians(player.getYRot() + 90)};
-			double yaw = Math.toRadians(player.getYRot() + 90);
 			double angleStep = Math.PI / ((double) tntAmount / 2); //How smooth the curve looks
 			double amplitude = 15; //Width of the curve
+			//Making sure the primed TNTs explode when all the primed TNTs in the current loop has spawned
 			int tntFuseTimer = (tntAmount * 50) / 50 ; //50 ms = 1 tick
-			final double[] changePosition = {0};
+			final double[] changePosition = {0}; //Initial position of the starting TNT
 			//List<PrimedTnt> trackedTnt = new ArrayList<>();
-				for (i = 0; i < tntAmount; i++) {
+				for (int i = 0; i < tntAmount; i++) {
 						//Fires a TNT at the interval specified in tick()
 					int finalI = i;
+					//Adds one primed TNT based on the tickCounter
 					add(() -> {
+						//Creates primed TNTs every iteration
 						PrimedTnt primedTnt = new PrimedTnt(level,
+								//X dir: cos, Z dir: sin, makes a circle
 								xDir + (Math.cos(angle[0]) * amplitude),
 								yDir+ 3 + Math.cos(changePosition[0]) * 5,
 								zDir + (Math.sin(angle[0]) * amplitude),
 								player);
 						primedTnt.setFuse(tntFuseTimer);
+						//Adds the primed TNT to the world
 						serverLevel.addFreshEntity(primedTnt);
 						//Performance improvement: Spawns a particle effect on each TNT that satisfy the modulus criteria instead of on each TNT
 						if((finalI % 6) == 1) {
@@ -124,12 +131,14 @@ public class FireballStickClickBlock implements ModInitializer {
 							});
 						});
 						 */
+						//Changes the initial angle by the value of angleStep every iteration so the TNTs are not static
 						angle[0] += angleStep;
+						//Height of the cos curve every iteration
 						changePosition[0] += Math.PI / ((double) (tntAmount / 4) / 2);
 					});
                 }
-			//Plays a sound when placed
-			//level.playSound((Entity) null, clickedPos.getX(), clickedPos.getY(), clickedPos.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0F, 1.0F);
+			//Plays a sound when a block is clicked
+			level.playSound(null, clickedPos.getX(), clickedPos.getY(), clickedPos.getZ(), SoundEvents.TNT_PRIMED, SoundSource.PLAYERS, 0.1F, 1.0F);
 			return InteractionResult.SUCCESS;
 		} else {
 			return InteractionResult.CONSUME;

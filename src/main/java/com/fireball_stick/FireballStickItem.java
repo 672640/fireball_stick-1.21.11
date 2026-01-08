@@ -16,7 +16,7 @@ public class FireballStickItem extends Item {
         super(properties);
     }
 
-    //Hit a block
+    //Click on block
     @Override
     public InteractionResult useOn(UseOnContext context) {
         return FireballStickClickBlock.useOn(this, context);
@@ -34,7 +34,7 @@ public class FireballStickItem extends Item {
         return FireballStickClickBlock.useDuration(this, itemStack, user);
     }
 
-    //Hit air, water or entity
+    //Click on air/liquid/entity
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (!level.isClientSide()) {
