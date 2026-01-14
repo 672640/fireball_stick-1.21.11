@@ -13,7 +13,7 @@ public class CustomTnt extends PrimedTnt {
     }
 //Ability to separate the values for the explosion power of TNTs for different classes
 
-    float explosionPower = 5F; //Default: 4.0F
+    float explosionPower = 4.0F; //Default: 4.0F
     double defaultGravity = 0.04; //Default: 0.04
     boolean explodeOnContact = false; //Custom-made, default: false
 
@@ -57,5 +57,6 @@ public class CustomTnt extends PrimedTnt {
         this.explodeOnContact = contactExplode;
     }
 }
+
 //TODO:
 //Add an option to adjust the pushback primed TNT get from exploding close to each other
