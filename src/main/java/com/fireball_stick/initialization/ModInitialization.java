@@ -71,6 +71,16 @@ public class ModInitialization implements ModInitializer {
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT)
                 .register(entries -> entries.accept(ModItems.TNT_STICK_BLOCK));
 
+        //TNT STICK FALLING BLOCK
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
+                .register(entries -> entries.accept(ModItems.TNT_STICK_FALLING_BLOCK));
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT)
+                .register(entries -> entries.accept(ModItems.TNT_STICK_FALLING_BLOCK));
+        //TNT STICK ENTITIES BLOCK
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
+                .register(entries -> entries.accept(ModItems.TNT_STICK_ENTITIES_BLOCK));
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT)
+                .register(entries -> entries.accept(ModItems.TNT_STICK_ENTITIES_BLOCK));
         //FIREBALL STICK BLOCK
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
                 .register(entries -> entries.accept(ModItems.TNT_STICK_UNBOUND_BLOCK));

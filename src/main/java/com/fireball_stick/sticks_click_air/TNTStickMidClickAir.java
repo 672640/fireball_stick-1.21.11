@@ -62,14 +62,18 @@ public class TNTStickMidClickAir extends Item {
             customTnt.setDeltaMovement(playerLookDir.scale(velocity));
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.TNT_PRIMED, SoundSource.PLAYERS, 0.4F, 1.0F);
+            customTnt.setTornado(true);
+            customTnt.setGradualEntitySpawnAfterExplosion(false);
+            customTnt.setEntityToSpawn(EntityType.TNT);
             customTnt.setFuse(randomFuse);
             customTnt.setExplodeOnContact(true);
             customTnt.setExplosionPower(0F);
             customTnt.setEntitySpawnAfterExplosion(true);
             customTnt.setCircle(true);
             customTnt.setAmplitude(20);
-            customTnt.setEntityToSpawn(EntityType.TNT);
-            customTnt.setEntityAmount(100);
+            customTnt.setEntityAmount(200);
+            customTnt.setKillEntitiesAfterLoop(false);
+            customTnt.setYIncrement(0.5);
             return customTnt;
         }
 

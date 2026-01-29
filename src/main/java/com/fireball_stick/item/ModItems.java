@@ -2,9 +2,7 @@ package com.fireball_stick.item;
 
 import com.fireball_stick.item_classes.air.*;
 import com.fireball_stick.initialization.ModInitialization;
-import com.fireball_stick.item_classes.block.FireballStickBlockItem;
-import com.fireball_stick.item_classes.block.TNTStickBlockItem;
-import com.fireball_stick.item_classes.block.TNTStickUnboundBlockItem;
+import com.fireball_stick.item_classes.block.*;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -116,6 +114,26 @@ public class ModItems {
                                     .stacksTo(1)
                                     .setId(TNT_STICK_UNBOUND_BLOCK_KEY)));
 
+    //TNT STICK FALLING BLOCK
+    public static final ResourceKey<Item> TNT_STICK_FALLING_BLOCK_KEY =
+            key("tnt_stick_falling_block");
+
+    public static final Item TNT_STICK_FALLING_BLOCK =
+            register(TNT_STICK_FALLING_BLOCK_KEY,
+                    new TNTStickFallingBlockItem(
+                            new Item.Properties()
+                                    .stacksTo(1)
+                                    .setId(TNT_STICK_FALLING_BLOCK_KEY)));
+    //TNT STICK ENTITIES BLOCK
+    public static final ResourceKey<Item> TNT_STICK_ENTITIES_BLOCK_KEY =
+            key("tnt_stick_entities_block");
+
+    public static final Item TNT_STICK_ENTITIES_BLOCK =
+            register(TNT_STICK_ENTITIES_BLOCK_KEY,
+                    new TNTStickEntitiesBlockItem(
+                            new Item.Properties()
+                                    .stacksTo(1)
+                                    .setId(TNT_STICK_ENTITIES_BLOCK_KEY)));
 //HELPER METHODS
     //Creating the item's identity
     private static ResourceKey<Item> key(String name) {
