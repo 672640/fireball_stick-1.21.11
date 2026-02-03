@@ -1,0 +1,33 @@
+package com.explosion_wands.mixin;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
+import net.minecraft.world.level.Level;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+@Mixin(LargeFireball.class)
+public abstract class LargeFireballMixin {
+    @Redirect(
+            method = "onHit",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/Level;explode(" +
+                            "Lnet/minecraft/world/entity/Entity;" +
+                            "D" +
+                            "D" +
+                            "D" +
+                            "F" +
+                            "Z" +
+                            "Lnet/minecraft/world/level/Level$ExplosionInteraction;" +
+                            ")V"
+            )
+    )
+
+    private void cancelExplosionFire(Level instance, Entity source, double x, double y, double z, float r, boolean fire, Level.ExplosionInteraction blockInteraction) {
+            LargeFireball spawnedFireball = (LargeFireball)(Object)this;
+            boolean shouldSpawnFire = !spawnedFireball.getTags().contains("fireball");
+                instance.explode(source, x, y, z, r, shouldSpawnFire, blockInteraction);
+    }
+}
