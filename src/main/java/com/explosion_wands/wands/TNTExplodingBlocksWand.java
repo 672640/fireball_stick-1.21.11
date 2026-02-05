@@ -35,12 +35,13 @@ public class TNTExplodingBlocksWand {
             int maxIncrement = ExplosionEntities.maxIncrement;
             int minRandomEntities = ExplosionEntities.minRandomEntity;
             int maxRandomEntities = ExplosionEntities.maxRandomEntity;
-            double maxRandomPos = ExplosionEntities.randomPos;
+            double maxRandomPos = ExplosionEntities.maxRandomPos;
+            double minRandomPos = ExplosionEntities.minRandomPos;
             RandomSource random = RandomSource.create();
             float randomExplosion = (minExplosion + random.nextFloat() * (maxExplosion - minExplosion));
             int randomIncrement = minIncrement + random.nextInt(maxIncrement - minIncrement);
             int randomEntity = minRandomEntities + random.nextInt(maxRandomEntities - minRandomEntities);
-            double randomPos = (maxRandomPos + random.nextDouble() * (maxRandomPos - 0));
+            double randomPos = (maxRandomPos + random.nextDouble() * (maxRandomPos - minRandomPos));
             int increment = ExplosionEntities.increment;
             double lessThanTheta = ExplosionEntities.lessThanTheta;
             double lessThanPhi = ExplosionEntities.lessThanPhi;

@@ -28,8 +28,9 @@ public class FireballScatterWand {
             int fuse = ExplosionEntities.fuse;
             int spawnedEntities = ExplosionEntities.spawnedEntities;
             RandomSource random = RandomSource.create();
-            double maxRandomPos = ExplosionEntities.randomPos;
-            double randomPos = (maxRandomPos + random.nextDouble() * (maxRandomPos - 0));
+            double maxRandomPos = ExplosionEntities.maxRandomPos;
+            double minRandomPos = ExplosionEntities.minRandomPos;
+            double randomPos = (maxRandomPos + random.nextDouble() * (maxRandomPos - minRandomPos));
             int fireballExplosionPower = 8;
             int increment = ExplosionEntities.increment;
             double lessThanTheta = ExplosionEntities.lessThanTheta;

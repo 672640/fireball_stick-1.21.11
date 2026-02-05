@@ -13,7 +13,8 @@ public class ExplosionEntities {
     public static int minIncrement = 2;
     public static int maxIncrement = 3;
     //Slight randomness to where the entities spawn when forming a sphere
-    public static double randomPos = 0.1;
+    public static double minRandomPos = -0.1;
+    public static double maxRandomPos = 0.1;
     //The core of how the sphere is made
     //First part of the for-loop
     public static double lessThanTheta = Math.PI;
